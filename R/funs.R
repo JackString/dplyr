@@ -10,9 +10,15 @@
 #'  - A call to the function with `.` as a dummy argument,
 #'    `mean(., na.rm = TRUE)`
 #'
-#'   These arguments are automatically [quoted][rlang::quo]. They
-#'   support [unquoting][rlang::quasiquotation] and splicing. See
-#'   `vignette("programming")` for an introduction to these concepts.
+#'  These arguments are automatically [quoted][rlang::quo]. They
+#'  support [unquoting][rlang::quasiquotation] and splicing. See
+#'  `vignette("programming")` for an introduction to these concepts.
+#'
+#'  The following notations are **not** supported, see examples:
+#'
+#'  - An anonymous function, `function(x) mean(x, na.rm = TRUE)`
+#'  - An anonymous function in \pkg{purrr} notation, `~mean(., na.rm = TRUE)`
+#'
 #' @param .args,args A named list of additional arguments to be added
 #'   to all function calls.
 #' @export
@@ -25,6 +31,11 @@
 #' # If you have function names in a vector, use funs_
 #' fs <- c("min", "max")
 #' funs_(fs)
+#'
+#' # Not supported
+#' \dontrun{
+#' funs(function(x) mean(x, na.rm = TRUE))
+#' funs(~mean(x, na.rm = TRUE))}
 funs <- function(..., .args = list()) {
   dots <- quos(...)
   default_env <- caller_env()
@@ -93,7 +104,7 @@ as_fun <- function(.x, .env, .args) {
 }
 
 quo_as_function <- function(quo) {
-  new_function(exprs(. = ), quo_get_expr(quo))
+  new_function(exprs(. = ), quo_get_expr(quo), quo_get_env(quo))
 }
 
 fun_env <- function(quo, default_env) {
@@ -105,7 +116,7 @@ fun_env <- function(quo, default_env) {
   }
 }
 
-is_fun_list <- function(x, env) {
+is_fun_list <- function(x) {
   inherits(x, "fun_list")
 }
 #' @export
